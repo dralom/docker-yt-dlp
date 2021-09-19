@@ -1,25 +1,28 @@
-FROM ubuntu:20.04
+FROM ubuntu
 
-RUN apt-get update && apt-get upgrade -y && apt-get update 
-RUN apt-get install -y ca-certificates 
-RUN apt-get install -y build-essential 
-RUN apt-get install -y chrpath 
-RUN apt-get install -y libssl-dev 
-RUN DEBIAN_FRONTEND="noninteractive" apt-get -y install tzdata
 ENV TZ=UTC
-RUN apt-get install -y libxft-dev 
-RUN apt-get install -y python3 
-RUN apt-get install -y python3-pip 
-RUN apt-get install -y wget
-RUN apt-get install -y ffmpeg 
-RUN DEBIAN_FRONTEND="noninteractive" apt-get -y install keyboard-configuration
+ENV DEBIAN_FRONTEND="noninteractive"
 
-RUN apt-get install -y phantomjs
+# RUN apt-get update && apt-get upgrade -y && apt-get update 
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    python3 \
+    python3-pip \
+    ffmpeg \
+    phantomjs && \
+    python3 -m pip install --upgrade yt-dlp && \
+    mkdir /download && \
+    groupmod -o -g 1000 ytdlp && \
+    usermod -o -u 1000 ytdlp && \
+    chown 1000:1000 /download && \
+    rm -rf \
+        /tmp/* \
+        /var/lib/apt/lists/* \
+        /var/tmp/*
 
-RUN python3 -m pip install --upgrade yt-dlp
+USER 1000:1000
 
-RUN mkdir /download
-
-WORKDIR /download
+VOLUME /download
 
 ENTRYPOINT [ "yt-dlp" ]
